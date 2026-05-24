@@ -1,7 +1,7 @@
 .data
 
 .include "cenarios/stage1.asm" 			#local onde esta o arquivo do cenario 1
-.include "cenarios/stage1_bossfight.asm" 	#local onde esta o arquivo do cenario 2
+.include "cenarios/stage2.asm" 		#local onde esta o arquivo do cenario 2
 
 
 .text
