@@ -4,10 +4,10 @@ from PIL import Image
 # CONFIGURAÇÕES
 # ==========================================
 
-INPUT_IMAGE = "menuprincipal.png" #colocar o nome do arquivo .png que sera convertido
-OUTPUT_FILE = "stage0.asm" #colocar o nome do arquivo .asm que sera gerado
+INPUT_IMAGE = "dummy.png" #colocar o nome do arquivo .png que sera convertido
+OUTPUT_FILE = "dummy.asm" #colocar o nome do arquivo .asm que sera gerado
 
-BASE_LABEL = "menu_principal" # configurar corretamenteo o valor do rotulo que estara configurado no asm gerado
+BASE_LABEL = "dummy" # configurar corretamenteo o valor do rotulo que estara configurado no asm gerado
 
 TRANSPARENT_COLOR = "0xFFFFFFFF"
 

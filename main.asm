@@ -5,6 +5,7 @@
 .include "cenarios/stage2.asm" 		#local onde esta o arquivo do cenario 2
 
 
+
 .text
 .globl main
 
