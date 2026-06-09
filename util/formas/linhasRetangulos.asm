@@ -11,6 +11,18 @@
 #      E = Base + (Y * Largura + X) * 4
 # =========================================    
 
+tela_branca:
+
+    li $t6, 0
+    add $t3, $zero, $t6
+    li $t7, 0
+    li $t8, 0xFFFFFF
+    li $s7, 512
+    add $s6, $zero $s7
+    li $t4, 256
+    
+    j desenhar_retangulo
+
 posicionar_pixel:
 
     lui $s0, 0x1001
@@ -52,6 +64,7 @@ desenhar_retangulo:
     sw    $ra, 4($sp)   # Guarda o endereço de retorno da main
     sw    $s7, 0($sp)   # Guarda o valor original do contador
     
+    
 for_retangulo:
 
    jal desenhar_linha
@@ -65,4 +78,5 @@ for_retangulo:
    lw $ra, 4($sp)   # Restaura o endereço de retorno da main
    addiu $sp, $sp, 8   # Libera a pilha
 
+   j renderizarAlunos
    jr $ra 

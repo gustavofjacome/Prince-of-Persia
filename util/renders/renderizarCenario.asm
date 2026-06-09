@@ -92,4 +92,16 @@ renderizarCenarioZero:
     
     jal render_cenario
     
-    j controlesCenario    
+    j controlesCenario
+    
+renderizarAlunos:
+
+    la $a0, alunos
+    lw $a1, alunos_width
+    lw $a2, alunos_height
+    
+    jal render_cenario
+    
+    j controlesCenario      
+    
+                                        

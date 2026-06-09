@@ -16,9 +16,9 @@ controlesCenarioEspelhado:
      
      jal acionarCaracterEspelhado
      
-     beq $v0, $s4, renderizarCenarioZero
-     beq $v0, $s2, renderizarCenarioUm
-     beq $v0, $s3, renderizarCenarioDois
+     beq $v0, $s4, renderizarCenarioZeroEspelhado
+     beq $v0, $s2, renderizarCenarioUmEspelhado
+     beq $v0, $s3, renderizarCenarioDoisEspelhado
      beq $v0, $s5, fim
      
      j controlesCenarioEspelhado

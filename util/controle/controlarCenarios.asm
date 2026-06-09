@@ -11,12 +11,14 @@ controlesCenario:
      li $s3, 107		# --> ASCII de 'k' --> Cenário 2
      li $s4, 114		# --> ASCII de 'r' --> Cenário 0
      li $s5, 120		# --> ASCII de 'x' --> Encerrar programa
+     li $s6, 97			# --> ASCII DE 'a' --> desenhar a tela branca com nomes cursivos
      
      jal acionarCaracter
      
      beq $v0, $s4, renderizarCenarioZero
      beq $v0, $s2, renderizarCenarioUm
      beq $v0, $s3, renderizarCenarioDois
+     beq $v0, $s6, tela_branca
      beq $v0, $s5, fim
      
      j controlesCenario
