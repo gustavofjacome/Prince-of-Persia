@@ -1,8 +1,8 @@
 from PIL import Image
 
-INPUT = "prince_jump_right.png"
-OUTPUT = "prince_jump_right.asm"
-LABEL = "prince_jump_right"
+INPUT = "gordo-defendendo.png"
+OUTPUT = "gordo-defendendo.asm"
+LABEL = "gordo_defendendo"
 TILE_SIZE = None  # usa imagem inteira 
 
 def rgb_to_hex(r, g, b):
