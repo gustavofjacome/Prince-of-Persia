@@ -11,6 +11,8 @@ BASE_LABEL = "pika" # configurar corretamenteo o valor do rotulo que estara conf
 
 TRANSPARENT_COLOR = "0xFFFFFFFF"
 
+
+
 img = Image.open(INPUT_IMAGE).convert("RGBA")
 
 width, height = img.size

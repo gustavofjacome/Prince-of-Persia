@@ -1,96 +1,294 @@
 .text
 
-# =========================================
+# ============================================================
 # FUNÇÃO: render_cenario
-# a0 = endereço do cenário
-# a1 = width (largura)
-# a2 = height (altura)
-# =========================================
+# ============================================================
+# Descrição:
+#   Renderiza um cenário completo no framebuffer.
+#
+# Parâmetros:
+#   $a0 -> Endereço base do cenário
+#   $a1 -> Largura do cenário
+#   $a2 -> Altura do cenário
+#
+# Funcionamento:
+#   Percorre todos os pixels do cenário e copia para
+#   o framebuffer. Pixels com valor 0xFFFFFFFF são
+#   considerados transparentes e não são desenhados.
+# ============================================================
 
 render_cenario:
-    addiu $sp, $sp, -16      # --> Abre 16 bytes na pilha (stack) para salvar registradores
-    sw $ra, 12($sp)          # --> Salva o endereço de retorno
-    sw $t0, 8($sp)           # --> Salva o registrador temporário $t0
-    sw $t1, 4($sp)           # --> Salva o registrador temporário $t1
-    sw $t2, 0($sp)           # --> Salva o registrador temporário $t2
 
-    li $t0, 0x10010000       # --> Carrega o endereço base do framebuffer (início da memória de vídeo)
-    mul $t3, $a1, $a2        # --> Multiplica largura x altura para obter o total de pixels a desenhar
+    # --------------------------------------------------------
+    # Salva registradores utilizados pela função
+    # --------------------------------------------------------
+    addiu $sp, $sp, -16
+    sw $ra, 12($sp)
+    sw $t0, 8($sp)
+    sw $t1, 4($sp)
+    sw $t2, 0($sp)
+
+    # --------------------------------------------------------
+    # Inicializa framebuffer
+    # --------------------------------------------------------
+    li $t0, 0x10010000      # Endereço base da memória de vídeo
+
+    # --------------------------------------------------------
+    # Calcula quantidade total de pixels
+    # total_pixels = largura × altura
+    # --------------------------------------------------------
+    mul $t3, $a1, $a2
+
+# ============================================================
+# Loop principal de renderização
+# ============================================================
 
 loop_render:
-    beqz $t3, end_render     # --> Se o total de pixels chegar a 0, termina a renderização
 
-    lw $t4, 0($a0)           # --> Lê a cor do pixel atual do cenário (memória)
+    # Se não existem mais pixels para desenhar
+    beqz $t3, end_render
 
-    li $t5, 0xFFFFFFFF       # --> Carrega a cor de transparência (branco) em $t5
-    beq $t4, $t5, skip_draw  # --> Se a cor do pixel for igual à transparência, pula o desenho
+    # Lê pixel atual do cenário
+    lw $t4, 0($a0)
 
-    sw $t4, 0($t0)           # --> Desenha o pixel na tela (salva no framebuffer)
+    # Cor usada como transparência
+    li $t5, 0xFFFFFFFF
+
+    # Se o pixel for transparente não desenha
+    beq $t4, $t5, skip_draw
+
+    # Copia pixel para o framebuffer
+    sw $t4, 0($t0)
 
 skip_draw:
-    addiu $a0, $a0, 4        # --> Avança para o próximo pixel na memória do cenário (4 bytes)
-    addiu $t0, $t0, 4        # --> Avança para o próximo pixel no framebuffer da tela (4 bytes)
-    addiu $t3, $t3, -1       # --> Decrementa o contador de pixels restantes
-    j loop_render            # --> Volta para desenhar o próximo pixel
+
+    # Avança para o próximo pixel do cenário
+    addiu $a0, $a0, 4
+
+    # Avança para o próximo pixel da tela
+    addiu $t0, $t0, 4
+
+    # Diminui contador de pixels restantes
+    addiu $t3, $t3, -1
+
+    j loop_render
+
+# ============================================================
+# Finalização da função
+# ============================================================
 
 end_render:
-    lw $ra, 12($sp)          # --> Restaura o endereço de retorno
-    lw $t0, 8($sp)           # --> Restaura o registrador $t0
-    lw $t1, 4($sp)           # --> Restaura o registrador $t1
-    lw $t2, 0($sp)           # --> Restaura o registrador $t2
-    addiu $sp, $sp, 16       # --> Libera o espaço alocado na pilha
-    jr $ra                   # --> Retorna para quem chamou a função
 
-# =========================================
-# FUNÇÃO: espera (ms)
-# =========================================
+    # Restaura registradores
+    lw $ra, 12($sp)
+    lw $t0, 8($sp)
+    lw $t1, 4($sp)
+    lw $t2, 0($sp)
+
+    addiu $sp, $sp, 16
+
+    # Retorna ao chamador
+    jr $ra
+
+
+# ============================================================
+# FUNÇÃO: espera
+# ============================================================
+# Descrição:
+#   Pausa a execução do programa por um período
+#   especificado em milissegundos.
+#
+# Parâmetros:
+#   $a0 -> Tempo em milissegundos
+#
+# Syscall utilizada:
+#   32 = Sleep
+# ============================================================
+
 espera:
-    li $v0, 32               # --> Syscall 32: Sleep (pausa a execução)
-    syscall                  # --> Executa a pausa com o tempo passado em $a0
-    jr $ra                   # --> Retorna
-    
-# =========================================
-# RENDERIZAÇÃO POR CONTROLE
-# =========================================
-    
+
+    li $v0, 32
+    syscall
+
+    jr $ra
+
+
+# ============================================================
+# FUNÇÃO: renderizarCenarioUm
+# ============================================================
+# Descrição:
+#   Responsável por atualizar e desenhar o cenário 1.
+#
+# Estratégia:
+#   - Primeiro frame: desenha cenário completo.
+#   - Próximos frames: restaura apenas a região onde
+#     o personagem estava anteriormente.
+#   - Desenha o personagem na nova posição.
+# ============================================================
+
 renderizarCenarioUm:
-    # --> 1. Desenha o cenário de fundo
-    la $a0, cenario1         # --> Carrega o endereço do arquivo do cenário 1
-    lw $a1, cenario1_width   # --> Carrega a largura do cenário 1
-    lw $a2, cenario1_height  # --> Carrega a altura do cenário 1
-    jal render_cenario       # --> Chama a função para desenhar o cenário na tela
 
-    # --> 2. Desenha o Príncipe por cima do cenário
-    la $a0, prince_idle_right # --> Carrega o endereço do sprite do personagem
-    li $a1, 45                # --> Define a coordenada X (posição horizontal do boneco)
-    li $a2, 75               # --> Define a coordenada Y (posição vertical / chão)
-    li $a3, 9                 # --> Define a largura do sprite do Príncipe (9 pixels)
-    li $t0, 42                # --> Define a altura do sprite do Príncipe (42 pixels)
-    jal renderizar_sprite     # --> Chama a função de renderização do personagem
+    # Verifica se o cenário precisa ser redesenhado
+    lw $t0, atualizar_fundo
+    beqz $t0, skip_fundo_um
 
-    j controlesCenario        # --> Volta a ler os comandos do teclado
-    
+    # --------------------------------------------------------
+    # Desenha cenário completo
+    # --------------------------------------------------------
+    la $a0, cenario1
+    lw $a1, cenario1_width
+    lw $a2, cenario1_height
+
+    jal render_cenario
+
+    # Marca que o fundo já foi desenhado
+    li $t0, 0
+    sw $t0, atualizar_fundo
+
+    j desenhar_principe_um
+
+skip_fundo_um:
+
+    # --------------------------------------------------------
+    # Restaura apenas a área antiga do personagem
+    # --------------------------------------------------------
+    la $a0, cenario1
+
+    lw $a1, prince_old_x
+    lw $a2, prince_old_y
+
+    li $a3, 9
+    li $t0, 42
+
+    jal restaurar_fundo_sprite
+
+desenhar_principe_um:
+
+    # --------------------------------------------------------
+    # Desenha personagem na posição atual
+    # --------------------------------------------------------
+    la $a0, prince_idle_right
+
+    lw $a1, prince_x
+    lw $a2, prince_y
+
+    li $a3, 9
+    li $t0, 42
+
+    jal renderizar_sprite
+
+    # --------------------------------------------------------
+    # Atualiza posição anterior
+    # --------------------------------------------------------
+    lw $t0, prince_x
+    sw $t0, prince_old_x
+
+    lw $t1, prince_y
+    sw $t1, prince_old_y
+
+    # Pequena pausa do game loop
+    li $a0, 15
+    jal espera
+
+    # Retorna ao controle principal
+    j controlesCenario
+
+
+# ============================================================
+# FUNÇÃO: renderizarCenarioDois
+# ============================================================
+# Descrição:
+#   Responsável pela renderização do cenário 2.
+#   Utiliza exatamente a mesma lógica do cenário 1.
+# ============================================================
+
 renderizarCenarioDois:
-    # --> 1. Desenha o cenário de fundo
-    la $a0, cenario_2         # --> Carrega o endereço do arquivo do cenário 2
-    lw $a1, cenario_2_width   # --> Carrega a largura do cenário 2
-    lw $a2, cenario_2_height  # --> Carrega a altura do cenário 2
-    jal render_cenario        # --> Chama a função para desenhar o cenário na tela
-    
-    # --> 2. Desenha o Príncipe por cima do cenário
-    la $a0, prince_idle_right # --> Carrega o endereço do sprite do personagem
-    li $a1, 80               # --> Define a coordenada X (posição horizontal do boneco)
-    li $a2, 140               # --> Define a coordenada Y (posição vertical / chão)
-    li $a3, 9                 # --> Define a largura do sprite do Príncipe (9 pixels)
-    li $t0, 42                # --> Define a altura do sprite do Príncipe (42 pixels)
-    jal renderizar_sprite     # --> Chama a função de renderização do personagem
 
-    j controlesCenario        # --> Volta a ler os comandos do teclado
-    
+    lw $t0, atualizar_fundo
+    beqz $t0, skip_fundo_dois
+
+    # --------------------------------------------------------
+    # Desenha cenário completo
+    # --------------------------------------------------------
+    la $a0, cenario_2
+
+    lw $a1, cenario_2_width
+    lw $a2, cenario_2_height
+
+    jal render_cenario
+
+    li $t0, 0
+    sw $t0, atualizar_fundo
+
+    j desenhar_principe_dois
+
+skip_fundo_dois:
+
+    # --------------------------------------------------------
+    # Remove rastro do personagem
+    # --------------------------------------------------------
+    la $a0, cenario_2
+
+    lw $a1, prince_old_x
+    lw $a2, prince_old_y
+
+    li $a3, 9
+    li $t0, 42
+
+    jal restaurar_fundo_sprite
+
+desenhar_principe_dois:
+
+    # --------------------------------------------------------
+    # Desenha personagem
+    # --------------------------------------------------------
+    la $a0, prince_idle_right
+
+    lw $a1, prince_x
+    lw $a2, prince_y
+
+    li $a3, 9
+    li $t0, 42
+
+    jal renderizar_sprite
+
+    # --------------------------------------------------------
+    # Atualiza posição anterior
+    # --------------------------------------------------------
+    lw $t0, prince_x
+    sw $t0, prince_old_x
+
+    lw $t1, prince_y
+    sw $t1, prince_old_y
+
+    # Delay do game loop
+    li $a0, 15
+    jal espera
+
+    # Retorna ao controle principal
+    j controlesCenario
+
+
+# ============================================================
+# FUNÇÃO: renderizarCenarioZero
+# ============================================================
+# Descrição:
+#   Renderiza o menu principal do jogo.
+#
+# Não utiliza sistema de restauração porque o menu
+# é uma tela estática.
+# ============================================================
+
 renderizarCenarioZero:
-    la $a0, menu_principal         # --> Carrega o endereço da tela de menu
-    lw $a1, menu_principal_width   # --> Carrega a largura do menu
-    lw $a2, menu_principal_height  # --> Carrega a altura do menu
-    jal render_cenario             # --> Desenha o menu (sem o personagem por cima)
-    j controlesCenario             # --> Volta a ler os comandos do teclado
-    
+
+    # Carrega imagem do menu principal
+    la $a0, menu_principal
+
+    lw $a1, menu_principal_width
+    lw $a2, menu_principal_height
+
+    # Desenha o menu
+    jal render_cenario
+
+    # Retorna para o controlador principal
+    j controlesCenario
