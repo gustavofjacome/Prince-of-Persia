@@ -157,23 +157,44 @@ skip_fundo_um:
     lw $a1, prince_old_x
     lw $a2, prince_old_y
 
-    li $a3, 9
+    li $a3, 50
     li $t0, 42
 
     jal restaurar_fundo_sprite
 
 desenhar_principe_um:
+    lw $t1, no_chao
+    bnez $t1, sprite_idle_um
 
-    # --------------------------------------------------------
-    # Desenha personagem na posição atual
-    # --------------------------------------------------------
-    la $a0, prince_idle_right
+    lw $t2, direcao
+    li $t3, 1
+    beq $t2, $t3, pulo_dir_um
+    la $a0, prince_jump_left
+    li $a3, 50
+    li $t0, 30
+    j pos_principe_um
+pulo_dir_um:
+    la $a0, prince_jump_right
+    li $a3, 50
+    li $t0, 30
+    j pos_principe_um
 
-    lw $a1, prince_x
-    lw $a2, prince_y
-
+sprite_idle_um:
+    lw $t2, direcao
+    li $t3, 1
+    beq $t2, $t3, idle_dir_um
+    la $a0, prince_idle_left
     li $a3, 9
     li $t0, 42
+    j pos_principe_um
+idle_dir_um:
+    la $a0, prince_idle_right
+    li $a3, 9
+    li $t0, 42
+
+pos_principe_um:
+    lw $a1, prince_x
+    lw $a2, prince_y
 
     jal renderizar_sprite
 
@@ -233,23 +254,44 @@ skip_fundo_dois:
     lw $a1, prince_old_x
     lw $a2, prince_old_y
 
-    li $a3, 9
+    li $a3, 50
     li $t0, 42
 
     jal restaurar_fundo_sprite
 
 desenhar_principe_dois:
+    lw $t1, no_chao
+    bnez $t1, sprite_idle_dois
 
-    # --------------------------------------------------------
-    # Desenha personagem
-    # --------------------------------------------------------
-    la $a0, prince_idle_right
+    lw $t2, direcao
+    li $t3, 1
+    beq $t2, $t3, pulo_dir_dois
+    la $a0, prince_jump_left
+    li $a3, 50
+    li $t0, 30
+    j pos_principe_dois
+pulo_dir_dois:
+    la $a0, prince_jump_right
+    li $a3, 50
+    li $t0, 30
+    j pos_principe_dois
 
-    lw $a1, prince_x
-    lw $a2, prince_y
-
+sprite_idle_dois:
+    lw $t2, direcao
+    li $t3, 1
+    beq $t2, $t3, idle_dir_dois
+    la $a0, prince_idle_left
     li $a3, 9
     li $t0, 42
+    j pos_principe_dois
+idle_dir_dois:
+    la $a0, prince_idle_right
+    li $a3, 9
+    li $t0, 42
+
+pos_principe_dois:
+    lw $a1, prince_x
+    lw $a2, prince_y
 
     jal renderizar_sprite
 

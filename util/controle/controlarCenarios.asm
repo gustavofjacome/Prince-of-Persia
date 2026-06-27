@@ -51,6 +51,8 @@ pulo_esquerda:
     sw $t0, velocidade_x
     li $t0, 0
     sw $t0, no_chao
+    li $t0, -1
+    sw $t0, direcao
     j aplicar_fisica
 
 pulo_direita:
@@ -62,6 +64,8 @@ pulo_direita:
     sw $t0, velocidade_x
     li $t0, 0
     sw $t0, no_chao
+    li $t0, 1
+    sw $t0, direcao
     j aplicar_fisica
 
 
@@ -100,6 +104,8 @@ move_a:
     li $t5, 1
     beq $v0, $t5, aplicar_fisica
     sw $t4, prince_x
+    li $t0, -1
+    sw $t0, direcao
     j aplicar_fisica
 
 
@@ -119,6 +125,8 @@ move_d:
     li $t5, 1
     beq $v0, $t5, aplicar_fisica
     sw $t4, prince_x
+    li $t0, 1
+    sw $t0, direcao
     j aplicar_fisica
 
 # ============================================================

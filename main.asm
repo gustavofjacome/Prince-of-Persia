@@ -18,7 +18,10 @@
 .include "tiles/stage2.asm"               # Matriz de tiles do Cenário 2 (stage_map2)
 
 # Sprites (Personagens)
-.include "sprites/prince_idle_right.asm"  # Sprite do príncipe
+.include "sprites/prince_idle_right.asm"  # Sprite do príncipe parado (direita)
+.include "sprites/prince_idle_left.asm"   # Sprite do príncipe parado (esquerda)
+.include "sprites/prince_jump_right.asm"  # Sprite do príncipe pulando (direita)
+.include "sprites/prince_jump_left.asm"   # Sprite do príncipe pulando (esquerda)
 .include "sprites/inimigo1-frame1.asm"    # Sprite do inimigo
 
 # ------------------------------------------------------------
@@ -43,6 +46,7 @@ atualizar_fundo:     .word 1       # 1 = Redesenha tudo | 0 = Retângulos Sujos
 velocidade_y:        .word 0       # Velocidade vertical (neg. = sobe, pos. = desce)
 velocidade_x:        .word 0       # Velocidade horizontal do drift (pulo diagonal)
 no_chao:             .word 1       # 1 = no chão, 0 = no ar
+direcao:             .word 1       # 1 = direita, -1 = esquerda
 
 # ============================================================
 # 3. INÍCIO DA ÁREA DE CÓDIGO PRINCIPAL
