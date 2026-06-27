@@ -118,6 +118,12 @@ espera:
 # ============================================================
 # Descrição:
 #   Responsável por atualizar e desenhar o cenário 1.
+#
+# Estratégia:
+#   - Primeiro frame: desenha cenário completo.
+#   - Próximos frames: restaura apenas a região onde
+#     o personagem estava anteriormente.
+#   - Desenha o personagem na nova posição.
 # ============================================================
 
 renderizarCenarioUm:
@@ -172,38 +178,13 @@ desenhar_principe_um:
     jal renderizar_sprite
 
     # --------------------------------------------------------
-    # Atualiza posição anterior do Príncipe
+    # Atualiza posição anterior
     # --------------------------------------------------------
     lw $t0, prince_x
     sw $t0, prince_old_x
 
     lw $t1, prince_y
     sw $t1, prince_old_y
-
-    # ============================================================
-    # LÓGICA DO NPC ORBITAL (BOLA) - NOVO NO CENÁRIO 1
-    # ============================================================
-    
-    # 1. Apaga a posição antiga da bola no fundo
-    la $a0, cenario1
-    lw $a1, bola_old_x
-    lw $a2, bola_old_y
-    li $a3, 50                  # Largura da bola
-    li $t0, 50                  # Altura da bola
-    jal restaurar_fundo_sprite
-
-    # 2. Roda a física de órbita (Calcula novo X e Y via LUT)
-    jal atualizar_orbita
-
-    # 3. Desenha a bola na nova posição
-    la $a0, bola
-    lw $a1, bola_x
-    lw $a2, bola_y
-    li $a3, 50
-    li $t0, 50
-    jal renderizar_sprite
-
-    # ============================================================
 
     # Pequena pausa do game loop
     li $a0, 15
@@ -218,6 +199,8 @@ desenhar_principe_um:
 # ============================================================
 # Descrição:
 #   Responsável pela renderização do cenário 2.
+#   Utiliza exatamente a mesma lógica do cenário 1, 
+#   adicionando o inimigo autônomo.
 # ============================================================
 
 renderizarCenarioDois:
@@ -280,18 +263,18 @@ desenhar_principe_dois:
     sw $t1, prince_old_y
 
     # ============================================================
-    # LÓGICA DO INIMIGO AUTÔNOMO ORIGINAL
+    # LÓGICA DO INIMIGO AUTÔNOMO
     # ============================================================
 
-    # 1. Restaura área antiga do inimigo
+    # 1. Restaura apenas a área antiga do inimigo (Dirty Rectangle)
     la $a0, cenario_2
     lw $a1, inimigo_old_x
     lw $a2, inimigo_old_y
-    li $a3, 39
-    li $t0, 50
+    li $a3, 39                  # Largura exata do inimigo
+    li $t0, 50                  # Altura exata do inimigo
     jal restaurar_fundo_sprite
 
-    # 2. Chama a física autônoma
+    # 2. Chama a física autônoma (faz o Y subir ou descer)
     jal atualizar_inimigos
 
     # 3. Desenha o inimigo na nova posição
@@ -303,32 +286,7 @@ desenhar_principe_dois:
     jal renderizar_sprite
 
     # ============================================================
-    # LÓGICA DO NPC ORBITAL (BOLA) - NOVO NO CENÁRIO 2
-    # ============================================================
-    
-    # 1. Apaga a posição antiga da bola no fundo
-    la $a0, cenario_2
-    lw $a1, bola_old_x
-    lw $a2, bola_old_y
-    li $a3, 50
-    li $t0, 50
-    jal restaurar_fundo_sprite
-
-    # 2. Roda a física de órbita (Calcula novo X e Y via LUT)
-    # Obs: Só precisamos atualizar a física uma vez por frame de jogo, 
-    # então você pode remover essa chamada daqui se achar que a bola 
-    # está girando rápido demais quando o cenário 2 for aberto (já que 
-    # ele puxa o mesmo arquivo do cenário 1).
-    jal atualizar_orbita
-
-    # 3. Desenha a bola na nova posição
-    la $a0, bola
-    lw $a1, bola_x
-    lw $a2, bola_y
-    li $a3, 50
-    li $t0, 50
-    jal renderizar_sprite
-
+    # FIM DA LÓGICA DO INIMIGO
     # ============================================================
 
     # Delay do game loop
@@ -344,6 +302,9 @@ desenhar_principe_dois:
 # ============================================================
 # Descrição:
 #   Renderiza o menu principal do jogo.
+#
+# Não utiliza sistema de restauração porque o menu
+# é uma tela estática.
 # ============================================================
 
 renderizarCenarioZero:

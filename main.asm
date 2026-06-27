@@ -1,126 +1,69 @@
 # ============================================================
 # ARQUIVO PRINCIPAL DO JOGO (main.asm)
 # ============================================================
-# Responsável por:
-# - Carregar cenários e sprites
-# - Inicializar variáveis dinâmicas (Príncipe e Inimigos)
-# - Manter o Game Loop contínuo
-# - Encerrar a execução do programa
-# ============================================================
 
 .data
 
-# ============================================================
+# ------------------------------------------------------------
 # 1. INCLUSÃO DE ARQUIVOS DE IMAGEM E MAPAS
-# ============================================================
-
 # ------------------------------------------------------------
-# Cenários
-# ------------------------------------------------------------
-.include "cenarios/dummy.asm"             # Cenário fantasma/utilizado como apoio
+# Cenários (Imagens Gráficas de Fundo)
+.include "cenarios/dummy.asm"             # Cenário fantasma
 .include "cenarios/stage0.asm"            # Tela/Menu inicial
-.include "cenarios/stage1.asm"            # Cenário 1
-.include "cenarios/stage2.asm"            # Cenário 2
+.include "cenarios/stage1.asm"            # Imagem do Cenário 1 (cenario1, cenario1_width...)
+.include "cenarios/stage2.asm"            # Imagem do Cenário 2 (cenario_2, cenario_2_width...)
 
-# ------------------------------------------------------------
+# Mapas de Colisão (Matrizes Numéricas de Tiles)
+.include "tiles/stage1.asm"               # Matriz de tiles do Cenário 1 (stage_map1)
+.include "tiles/stage2.asm"               # Matriz de tiles do Cenário 2 (stage_map2)
+
 # Sprites (Personagens)
-# ------------------------------------------------------------
 .include "sprites/prince_idle_right.asm"  # Sprite do príncipe
-.include "sprites/inimigo1-frame1.asm"    # Sprite do inimigo (Frame 1)
-.include "sprites/bola.asm"               # NOVO: Sprite da bola (NPC Orbital 50x50)
-
-
-# ============================================================
-# 2. VARIÁVEIS DINÂMICAS DO JOGO
-# ============================================================
+.include "sprites/inimigo1-frame1.asm"    # Sprite do inimigo
 
 # ------------------------------------------------------------
-# Posições e Estados do Príncipe (Herói)
+# 2. VARIÁVEIS DINÂMICAS DO JOGO
 # ------------------------------------------------------------
 prince_x:            .word 45      # Coordenada X atual
-prince_y:            .word 75      # Coordenada Y atual
-prince_old_x:        .word 45      # Coordenada X anterior (Borracha)
-prince_old_y:        .word 75      # Coordenada Y anterior (Borracha)
+prince_y:            .word 54      # Coordenada Y atual (MUDOU PARA 10)
+prince_old_x:        .word 45      # Coordenada X anterior
+prince_old_y:        .word 54      # Coordenada Y anterior (MUDOU PARA 10)
 
-# ------------------------------------------------------------
-# Posições e Estados do Inimigo (Cenário 2)
-# ------------------------------------------------------------
 inimigo_x:           .word 400     # Lado direito da tela
-inimigo_y:           .word 142     # Chão exato (256 - 64 - 50)
-inimigo_old_x:       .word 400     # Posição X antiga (Borracha)
-inimigo_old_y:       .word 142     # Posição Y antiga (Borracha)
+inimigo_y:           .word 142     # Chão exato
+inimigo_old_x:       .word 400     
+inimigo_old_y:       .word 142     
 
-# Física do Inimigo
-inimigo_jump_dir:    .word 1       # 1 = subindo, -1 = descendo
-inimigo_jump_count:  .word 0       # Conta quantos pixels já subiu/desceu
+inimigo_jump_dir:    .word 1       
+inimigo_jump_count:  .word 0       
 
-# ------------------------------------------------------------
-# Posições e Estados do NPC Orbital (Bola) - NOVO
-# ------------------------------------------------------------
-bola_x:              .word 300     # Posição inicial X
-bola_y:              .word 100     # Posição inicial Y
-bola_old_x:          .word 300     # Posição antiga X (para a borracha)
-bola_old_y:          .word 100     # Posição antiga Y (para a borracha)
+cenario_atual:       .word 1       # Cenário inicial
+atualizar_fundo:     .word 1       # 1 = Redesenha tudo | 0 = Retângulos Sujos
 
-# Tabela de Look-Up (LUT) para a órbita circular
-# Centro da órbita: (220, 100) | Raio: 80 pixels | 32 frames de animação
-bola_indice:         .word 0       # Qual ponto da órbita estamos (0 a 31)
-
-orbita_lut_x: .word 300, 298, 294, 286, 276, 264, 250, 235, 220, 204, 189, 175, 163, 153, 145, 141, 140, 141, 145, 153, 163, 175, 189, 204, 220, 235, 250, 264, 276, 286, 294, 298
-orbita_lut_y: .word 100, 115, 130, 144, 156, 166, 174, 178, 180, 178, 174, 166, 156, 144, 130, 115, 100, 84, 69, 55, 43, 33, 25, 21, 20, 21, 25, 33, 43, 55, 69, 84
-
-# ------------------------------------------------------------
-# Controle de Sistema (Cenários e Renderização)
-# ------------------------------------------------------------
-cenario_atual:       .word 1       # Cenário carregado ao iniciar o jogo
-atualizar_fundo:     .word 1       # 1 = Redesenha tudo | 0 = Usa Dirty Rectangles
-
+velocidade_y:        .word 0       # Velocidade vertical (neg. = sobe, pos. = desce)
+velocidade_x:        .word 0       # Velocidade horizontal do drift (pulo diagonal)
+no_chao:             .word 1       # 1 = no chão, 0 = no ar
 
 # ============================================================
 # 3. INÍCIO DA ÁREA DE CÓDIGO PRINCIPAL
 # ============================================================
-
 .text
 .globl main
 
 main:
-
-# ------------------------------------------------------------
-# GAME LOOP PRINCIPAL
-# ------------------------------------------------------------
-# Mantém o jogo rodando infinitamente para ler o teclado e
-# processar a física dos inimigos autônomos.
-# ------------------------------------------------------------
 game_loop:
-
     jal controlesCenario           # Executa lógica de controles e renderização
-
     j game_loop                    # Repete o ciclo infinitamente
 
-
-# ============================================================
-# ENCERRAMENTO DO PROGRAMA (Chamado ao apertar 'X')
-# ============================================================
 fim:
     li $v0, 10
     syscall
 
-
 # ============================================================
 # 4. INCLUSÃO DOS MÓDULOS LÓGICOS DO PROJETO (.text)
 # ============================================================
-
-# Controle principal (Movimento e troca de cenário)
 .include "util/controle/controlarCenarios.asm"
-
-# Motor de renderização de cenários
+.include "util/controle/colisoes.asm"
 .include "util/renders/renderizarCenario.asm"
-
-# Motor de renderização de sprites (Príncipe e Inimigos)
 .include "personagem/renderizarPersonagem.asm"
-
-# Lógica autônoma do Inimigo
 .include "inimigo/atualizarInimigo.asm"
-
-# Lógica autônoma do NPC Orbital (Bola) - NOVO
-.include "inimigo/atualizarOrbita.asm"

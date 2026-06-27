@@ -1,373 +1,365 @@
 .text
 .globl controlesCenario
 
-# ============================================================
-# FUNÇÃO: controlesCenario
-# ============================================================
-# Descrição:
-#   Responsável por controlar toda a lógica principal do jogo:
-#
-#   - Leitura do teclado
-#   - Movimentação do personagem
-#   - Troca de cenários
-#   - Reinício do jogo
-#   - Encerramento da execução
-#
-# Teclas disponíveis:
-#   W -> Move para cima
-#   A -> Move para esquerda
-#   S -> Move para baixo
-#   D -> Move para direita
-#   R -> Reinicia o jogo
-#   X -> Encerra o jogo
-#
-# Fluxo:
-#   Ler tecla -> Atualizar posição -> Verificar limites
-#   -> Trocar cenário (se necessário)
-#   -> Renderizar cenário atual
-# ============================================================
-
 controlesCenario:
-
-    # --------------------------------------------------------
-    # Lê teclado (não bloqueante)
-    # Retorna ASCII da tecla em $v0
-    # --------------------------------------------------------
     jal acionarCaracter
 
-# ============================================================
-# VERIFICAÇÃO DAS TECLAS DE SISTEMA
-# ============================================================
-
-    # --------------------------------------------------------
-    # Tecla R -> Reiniciar jogo
-    # --------------------------------------------------------
-    li $t0, 114               # ASCII 'r'
+    li $t0, 114               # ASCII 'r' (Reset)
     beq $v0, $t0, reset_jogo
-
-    # --------------------------------------------------------
-    # Tecla X -> Encerrar jogo
-    # --------------------------------------------------------
-    li $t0, 120               # ASCII 'x'
+    li $t0, 120               # ASCII 'x' (Sair)
     beq $v0, $t0, fim_jogo
 
-# ============================================================
-# CARREGA POSIÇÃO ATUAL DO PERSONAGEM
-# ============================================================
+    lw $t1, prince_x          
+    lw $t2, prince_y          
+    li $t3, 10                # Velocidade do passo
 
-    lw $t1, prince_x          # X atual
-    lw $t2, prince_y          # Y atual
-
-    li $t3, 15                # Velocidade de movimento
-
-# ============================================================
-# VERIFICAÇÃO DAS TECLAS DE MOVIMENTO
-# ============================================================
-
-    # W -> Cima
-    li $t0, 119               # ASCII 'w'
-    beq $v0, $t0, move_w
-
-    # S -> Baixo
+    li $t0, 113               # ASCII 'q' (Pulo Diagonal Esquerda)
+    beq $v0, $t0, pulo_esquerda
+    li $t0, 119               # ASCII 'w' (Pulo)
+    beq $v0, $t0, iniciar_pulo
+    li $t0, 101               # ASCII 'e' (Pulo Diagonal Direita)
+    beq $v0, $t0, pulo_direita
     li $t0, 115               # ASCII 's'
     beq $v0, $t0, move_s
-
-    # A -> Esquerda
     li $t0, 97                # ASCII 'a'
     beq $v0, $t0, move_a
-
-    # D -> Direita
     li $t0, 100               # ASCII 'd'
     beq $v0, $t0, move_d
 
-    # Nenhuma tecla pressionada
-    j verifica_limites
-
+    j aplicar_fisica
 
 # ============================================================
-# MOVIMENTAÇÃO DO PERSONAGEM
+# LÓGICA DE MOVIMENTO COM PROTEÇÃO DE PILHA (CALLER-SAVED)
 # ============================================================
 
-move_w:
+iniciar_pulo:
+    lw $t0, no_chao
+    beqz $t0, aplicar_fisica
+    li $t0, -16
+    sw $t0, velocidade_y
+    sw $zero, velocidade_x
+    li $t0, 0
+    sw $t0, no_chao
+    j aplicar_fisica
 
-    # Move para cima
-    subu $t2, $t2, $t3
-    sw $t2, prince_y
+pulo_esquerda:
+    lw $t0, no_chao
+    beqz $t0, aplicar_fisica
+    li $t0, -16
+    sw $t0, velocidade_y
+    li $t0, -5
+    sw $t0, velocidade_x
+    li $t0, 0
+    sw $t0, no_chao
+    j aplicar_fisica
 
-    j verifica_limites
+pulo_direita:
+    lw $t0, no_chao
+    beqz $t0, aplicar_fisica
+    li $t0, -16
+    sw $t0, velocidade_y
+    li $t0, 5
+    sw $t0, velocidade_x
+    li $t0, 0
+    sw $t0, no_chao
+    j aplicar_fisica
 
 
 move_s:
+    addu $t4, $t2, $t3           
+    move $a0, $t1
+    move $a1, $t4
+    
+    addiu $sp, $sp, -4
+    sw $t4, 0($sp)
+    jal checar_colisao
+    lw $t4, 0($sp)
+    addiu $sp, $sp, 4
 
-    # Move para baixo
-    addu $t2, $t2, $t3
-    sw $t2, prince_y
-
-    j verifica_limites
+    li $t5, 2
+    beq $v0, $t5, morte_personagem
+    li $t5, 1
+    beq $v0, $t5, aplicar_fisica
+    sw $t4, prince_y
+    j aplicar_fisica
 
 
 move_a:
+    subu $t4, $t1, $t3           
+    move $a0, $t4                
+    move $a1, $t2                
+    
+    addiu $sp, $sp, -4
+    sw $t4, 0($sp)
+    jal checar_colisao
+    lw $t4, 0($sp)
+    addiu $sp, $sp, 4
 
-    # Move para esquerda
-    subu $t1, $t1, $t3
-    sw $t1, prince_x
-
-    j verifica_limites
+    li $t5, 2
+    beq $v0, $t5, morte_personagem
+    li $t5, 1
+    beq $v0, $t5, aplicar_fisica
+    sw $t4, prince_x
+    j aplicar_fisica
 
 
 move_d:
+    addu $t4, $t1, $t3           
+    move $a0, $t4
+    move $a1, $t2
+    
+    addiu $sp, $sp, -4
+    sw $t4, 0($sp)
+    jal checar_colisao
+    lw $t4, 0($sp)
+    addiu $sp, $sp, 4
 
-    # Move para direita
-    addu $t1, $t1, $t3
-    sw $t1, prince_x
+    li $t5, 2
+    beq $v0, $t5, morte_personagem
+    li $t5, 1
+    beq $v0, $t5, aplicar_fisica
+    sw $t4, prince_x
+    j aplicar_fisica
 
+# ============================================================
+# SISTEMA DE PULO E FÍSICA
+# ============================================================
+
+aplicar_fisica:
+    lw $t0, no_chao
+    bnez $t0, verificar_chao
+    j aplicar_gravidade
+
+verificar_chao:
+    lw $a0, prince_x
+    lw $a1, prince_y
+    addiu $a1, $a1, 1
+    addiu $sp, $sp, -4
+    sw $ra, 0($sp)
+    jal checar_colisao
+    lw $ra, 0($sp)
+    addiu $sp, $sp, 4
+    li $t5, 2
+    beq $v0, $t5, morte_personagem
+    bnez $v0, depois_fisica
+
+    li $t0, 0
+    sw $t0, no_chao
+    sw $t0, velocidade_y
+
+aplicar_gravidade:
+    lw $t1, velocidade_y
+    addiu $t1, $t1, 1
+    sw $t1, velocidade_y
+
+    lw $t2, prince_y
+    addu $t3, $t2, $t1
+
+    lw $a0, prince_x
+    move $a1, $t3
+    addiu $sp, $sp, -12
+    sw $ra, 8($sp)
+    sw $t1, 4($sp)
+    sw $t3, 0($sp)
+    jal checar_colisao
+    lw $t1, 4($sp)
+    lw $t3, 0($sp)
+    lw $ra, 8($sp)
+    addiu $sp, $sp, 12
+
+    li $t4, 2
+    beq $v0, $t4, morte_personagem
+    li $t4, 1
+    beq $v0, $t4, bateu_objeto
+    sw $t3, prince_y
+    j depois_drift
+
+bateu_objeto:
+    bgez $t1, pousar_chao
+
+    li $t1, 0
+    sw $t1, velocidade_y
+    j depois_drift
+
+
+pousar_chao:
+    addu $t5, $t3, 41
+    srl $t5, $t5, 4
+    sll $t5, $t5, 4
+    addiu $t5, $t5, -42
+
+    sw $t5, prince_y
+    li $t1, 0
+    sw $t1, velocidade_y
+    sw $zero, velocidade_x
+    li $t1, 1
+    sw $t1, no_chao
+    j depois_drift
+
+depois_drift:
+    lw $t0, velocidade_x
+    beqz $t0, depois_fisica
+
+    lw $t1, prince_x
+    addu $t2, $t1, $t0
+
+    move $a0, $t2
+    lw $a1, prince_y
+    addiu $sp, $sp, -12
+    sw $ra, 8($sp)
+    sw $t0, 4($sp)
+    sw $t2, 0($sp)
+    jal checar_colisao
+    lw $t0, 4($sp)
+    lw $t2, 0($sp)
+    lw $ra, 8($sp)
+    addiu $sp, $sp, 12
+
+    li $t3, 2
+    beq $v0, $t3, morte_personagem
+    li $t3, 1
+    beq $v0, $t3, parar_drift_x
+
+    sw $t2, prince_x
+    j depois_fisica
+
+parar_drift_x:
+    sw $zero, velocidade_x
+    j depois_fisica
+
+depois_fisica:
+    lw $t0, cenario_atual
+    li $t1, 2
+    beq $t0, $t1, verificar_inimigo
     j verifica_limites
 
+verificar_inimigo:
+    lw $t0, prince_x
+    lw $t1, inimigo_x
+    addiu $t1, $t1, 38
+    bge $t0, $t1, depois_inimigo
+
+    lw $t0, prince_x
+    addiu $t0, $t0, 8
+    lw $t1, inimigo_x
+    blt $t0, $t1, depois_inimigo
+
+    lw $t0, prince_y
+    lw $t1, inimigo_y
+    addiu $t1, $t1, 49
+    bge $t0, $t1, depois_inimigo
+
+    lw $t0, prince_y
+    addiu $t0, $t0, 41
+    lw $t1, inimigo_y
+    blt $t0, $t1, depois_inimigo
+
+    j morte_personagem
+
+depois_inimigo:
+    j verifica_limites
 
 # ============================================================
-# CONTROLE DE LIMITES DA TELA
-# ============================================================
-# Impede que o personagem saia da tela.
-# Também controla a mudança entre cenários.
-# ============================================================
 
-verifica_limites:
-
-    # Carrega posição X atualizada
-    lw $t1, prince_x
-
-    # --------------------------------------------------------
-    # Parede esquerda
-    # --------------------------------------------------------
-    li $t4, 0
-
-    blt $t1, $t4, trava_esquerda
-
-    # --------------------------------------------------------
-    # Parede direita
-    # --------------------------------------------------------
-    li $t4, 500
-
-    bge $t1, $t4, transicao_direita
-
-    j redirecionar_cenario
-
-
-# ============================================================
-# TRAVA DA PAREDE ESQUERDA
-# ============================================================
-
-trava_esquerda:
-
-    # Impede X negativo
-    li $t1, 0
-
-    sw $t1, prince_x
-
-    j redirecionar_cenario
-
-
-# ============================================================
-# TRANSIÇÃO ENTRE CENÁRIOS
-# ============================================================
-
-transicao_direita:
-
-    # Descobre qual cenário está ativo
-    lw $t0, cenario_atual
-
-    # --------------------------------------------------------
-    # Cenário 1 -> Cenário 2
-    # --------------------------------------------------------
-    li $t4, 1
-    beq $t0, $t4, vai_para_cenario_2
-
-    # --------------------------------------------------------
-    # Cenário 2 -> Menu Final
-    # --------------------------------------------------------
-    li $t4, 2
-    beq $t0, $t4, vai_para_cenario_0
-
-    j redirecionar_cenario
-
-
-# ============================================================
-# TRANSIÇÃO PARA O CENÁRIO 2
-# ============================================================
-
-vai_para_cenario_2:
-
-    # Atualiza estado do jogo
-    li $t0, 2
-    sw $t0, cenario_atual
-
-    # Força redesenho completo do cenário
-    li $t0, 1
-    sw $t0, atualizar_fundo
-
-    # Posiciona personagem no início da nova tela
-    li $t1, 10
-    sw $t1, prince_x
-
-    j renderizarCenarioDois
-
-
-# ============================================================
-# TRANSIÇÃO PARA O MENU FINAL
-# ============================================================
-
-vai_para_cenario_0:
-
-    # Define cenário atual
-    li $t0, 0
-    sw $t0, cenario_atual
-
-    # Força redesenho completo
-    li $t0, 1
-    sw $t0, atualizar_fundo
-
-    j renderizarCenarioZero
-
-
-# ============================================================
-# REINICIAR JOGO
-# ============================================================
-# Retorna ao estado inicial:
-#   Cenário 1
-#   Posição inicial do personagem
-# ============================================================
-
-reset_jogo:
-
-    # Cenário inicial
-    li $t0, 1
-    sw $t0, cenario_atual
-
-    # Força renderização completa
-    li $t0, 1
-    sw $t0, atualizar_fundo
-
-    # Coordenada X inicial
+morte_personagem:
     li $t1, 45
     sw $t1, prince_x
-
-    # Coordenada Y inicial
-    li $t2, 75
+    li $t2, 54               # Chão Perfeito
     sw $t2, prince_y
+    li $t3, 0
+    sw $t3, velocidade_y
+    li $t3, 1
+    sw $t3, no_chao
+    j vai_para_cenario_0
 
-    j renderizarCenarioUm
+verifica_limites:
+    lw $t1, prince_x
+    li $t4, 0
+    blt $t1, $t4, trava_esquerda
+    li $t4, 491
+    bge $t1, $t4, transicao_direita
+    j redirecionar_cenario
 
+trava_esquerda:
+    li $t1, 0
+    sw $t1, prince_x
+    j redirecionar_cenario
 
-# ============================================================
-# REDIRECIONADOR DE CENÁRIOS
-# ============================================================
-# Escolhe qual rotina de renderização deve ser chamada
-# conforme o valor de cenario_atual.
-# ============================================================
+transicao_direita:
+    lw $t0, cenario_atual
+    li $t4, 1
+    beq $t0, $t4, vai_para_cenario_2
+    li $t4, 2
+    beq $t0, $t4, vai_para_cenario_0
+    j redirecionar_cenario
+
+vai_para_cenario_2:
+    li $t0, 2
+    sw $t0, cenario_atual
+    li $t0, 1
+    sw $t0, atualizar_fundo
+    li $t1, 10
+    sw $t1, prince_x
+    li $t2, 54               # Chão Perfeito (mesma lógica do reset/morte)
+    sw $t2, prince_y
+    li $t3, 0
+    sw $t3, velocidade_y
+    li $t3, 1
+    sw $t3, no_chao
+    j redirecionar_cenario
+
+vai_para_cenario_0:
+    li $t0, 0
+    sw $t0, cenario_atual
+    li $t0, 1
+    sw $t0, atualizar_fundo
+    j redirecionar_cenario
+
+reset_jogo:
+    li $t0, 1
+    sw $t0, cenario_atual
+    li $t0, 1
+    sw $t0, atualizar_fundo
+    li $t1, 45
+    sw $t1, prince_x
+    li $t2, 54               # Chão Perfeito
+    sw $t2, prince_y
+    li $t3, 0
+    sw $t3, velocidade_y
+    li $t3, 1
+    sw $t3, no_chao
+    j redirecionar_cenario
 
 redirecionar_cenario:
-
     lw $t0, cenario_atual
-
-    # Cenário 1
     li $t1, 1
     beq $t0, $t1, renderizarCenarioUm
-
-    # Cenário 2
     li $t1, 2
     beq $t0, $t1, renderizarCenarioDois
-
-    # Menu principal
     j renderizarCenarioZero
 
-
-# ============================================================
-# ENCERRAMENTO DO JOGO
-# ============================================================
-
 fim_jogo:
-
     li $v0, 10
     syscall
 
-
-# ============================================================
-# FUNÇÃO: existeCaracter
-# ============================================================
-# Descrição:
-#   Verifica se existe uma tecla disponível no
-#   dispositivo MMIO do teclado.
-#
-# Retorno:
-#   $v0 = 1 -> Existe tecla
-#   $v0 = 0 -> Não existe tecla
-#
-# Endereço MMIO:
-#   0xFFFF0000 -> Controle do teclado
-# ============================================================
-
 existeCaracter:
-
     lui $t0, 0xFFFF
-
     lw $t1, 0($t0)
-
     and $v0, $t1, 1
-
     jr $ra
 
-
-# ============================================================
-# FUNÇÃO: acionarCaracter
-# ============================================================
-# Descrição:
-#   Realiza leitura não bloqueante do teclado.
-#
-# Retorno:
-#   $v0 = Código ASCII da tecla pressionada
-#   $v0 = 0 caso nenhuma tecla esteja disponível
-#
-# Endereços MMIO:
-#   0xFFFF0000 -> Status do teclado
-#   0xFFFF0004 -> Dado do teclado
-# ============================================================
-
 acionarCaracter:
-
-    # Salva endereço de retorno
     addi $sp, $sp, -4
     sw $ra, 0($sp)
-
-    # Verifica se existe tecla disponível
     jal existeCaracter
-
-    # Nenhuma tecla pressionada
     beq $v0, $zero, sem_tecla
-
-    # Lê caractere digitado
     lui $t0, 0xFFFF
     lw $v0, 4($t0)
-
     j fim_acionar
 
-
-# ============================================================
-# Nenhuma tecla disponível
-# ============================================================
-
 sem_tecla:
-
     li $v0, 0
-
-
-# ============================================================
-# Finalização da leitura
-# ============================================================
-
 fim_acionar:
-
-    # Restaura endereço de retorno
     lw $ra, 0($sp)
     addi $sp, $sp, 4
-
     jr $ra
