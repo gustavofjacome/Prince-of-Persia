@@ -1,3 +1,10 @@
+# =============================================================================
+# prince_idle_left.asm  -  sprite do principe parado (esquerda)
+# =============================================================================
+# Sprite 9x44 pixels em formato RGBA (paleta).
+# Pixels com valor 0x00000000 sao transparentes.
+# prince_idle_left: endereco do sprite
+# =============================================================================
 .data
 prince_idle_left:
 .word 0x00382810, 0x00706038, 0x00A89080, 0x00706038, 0x00382810, 0x00000000, 0x00000000, 0x00000000, 0x00000000

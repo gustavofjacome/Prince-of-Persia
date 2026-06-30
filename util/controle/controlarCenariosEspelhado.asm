@@ -1,3 +1,19 @@
+# =============================================================================
+# controlarCenariosEspelhado.asm  -  controle de cenario modo espelhado
+# =============================================================================
+# controlesCenarioEspelhado:
+#   Loop de controle do cenario no modo espelhado (horizontal).
+#   Mapeia teclas: 'j'(106)=cenario1, 'k'(107)=cenario2, 'r'(114)=menu,
+#   'x'(120)=sair.
+# -----------------------------------------------------------------------------
+# existeCaracterEspelhado:
+#   Verifica se um caractere foi pressionado no hardware.
+#   Retorna: v0=1 se houve tecla, 0 senao.
+# -----------------------------------------------------------------------------
+# acionarCaracterEspelhado:
+#   Espera ate que uma tecla seja pressionada e retorna seu codigo.
+#   Retorna: v0=codigo da tecla pressionada.
+# =============================================================================
 .text
 controlesCenarioEspelhado:
     li $s2, 106

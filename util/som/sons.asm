@@ -1,3 +1,35 @@
+# =============================================================================
+# sons.asm  -  efeitos sonoros do jogo (syscall 31/33)
+# =============================================================================
+# play_som_ataque:
+#   Som de ataque. Nota: D5 (72), duracao: 50ms, instrumento: 127, volume: 127
+# -----------------------------------------------------------------------------
+# play_som_pulo:
+#   Som de pulo. Nota: G4 (67), duracao: 100ms, instrumento: 123, volume: 90
+# -----------------------------------------------------------------------------
+# play_som_morte:
+#   Som de morte. Nota: C2 (36), duracao: 400ms, instrumento: 127, volume: 120
+# -----------------------------------------------------------------------------
+# play_som_acerto_inimigo:
+#   Som de acerto no inimigo. Nota: C4 (60), duracao: 60ms, inst: 122, vol: 100
+# -----------------------------------------------------------------------------
+# play_som_inimigo_morto:
+#   Som de inimigo morto. Duas notas: E4 (64, 120ms, inst:61) e
+#   G4 (71, 200ms, inst:61)
+# -----------------------------------------------------------------------------
+# play_som_fase_completa:
+#   Melodia de fase completa. Sequencia: C4(60), E4(64), G4(67), C5(72)
+#   cada uma 150ms, ultima 300ms, instrumento:63
+# -----------------------------------------------------------------------------
+# play_som_pouso:
+#   Som de pouso. Nota: C3 (48), duracao: 80ms, instrumento: 117, volume: 80
+# -----------------------------------------------------------------------------
+# play_som_transicao:
+#   Som de transicao. Duas notas: C5(72) e C4(60), 100ms, inst:80, vol:90
+# -----------------------------------------------------------------------------
+# play_som_menu:
+#   Som de menu. Sequencia: C4(60), E4(64), G4(67), 100ms, inst:54, vol:80
+# =============================================================================
 .text
 .globl play_som_ataque
 play_som_ataque:

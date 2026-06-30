@@ -1,3 +1,20 @@
+# =============================================================================
+# colisoes.asm  -  deteccao de colisoes com o cenario
+# =============================================================================
+# checar_colisao:
+#   Verifica colisao em 6 pontos ao redor do personagem.
+#   Chama obter_tile para cada ponto e atualiza o maior valor de colisao.
+#   Argumentos: a0=x, a1=y  |  Retorna: v0=tipo de tile mais alto
+# -----------------------------------------------------------------------------
+# obter_tile:
+#   Obtem o tipo de tile do mapa do cenario para uma dada coordenada.
+#   Coordenadas fora dos limites retornam 1 (parede).
+#   Argumentos: a0=x, a1=y  |  Retorna: v0=0(ar), 1(solido), 2(morte)
+# -----------------------------------------------------------------------------
+# atualizar_max_colisao:
+#   Mantem em s2 o maior valor de colisao encontrado.
+#   Argumento: v0=valor do tile  |  Saida: s2=max(s2, v0)
+# =============================================================================
 .text
 .globl checar_colisao
 checar_colisao:

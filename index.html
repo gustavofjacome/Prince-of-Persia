@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prince of Persia — MIPS Assembly</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0a0f;
+            color: #d0d0d0;
+            line-height: 1.7;
+            font-size: 15px;
+        }
+        a { color: #e94560; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        code {
+            background: #1a1a24;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            color: #f0c080;
+        }
+
+        .topbar {
+            background: #101018;
+            border-bottom: 1px solid #1e1e2a;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .topbar h1 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+        .topbar h1 span { color: #e94560; }
+        .topbar nav { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+        .topbar nav a {
+            color: #888;
+            font-size: 0.85rem;
+        }
+        .topbar nav a:hover { color: #e94560; }
+
+        .hero {
+            padding: 3rem 2rem;
+            text-align: center;
+            background: linear-gradient(180deg, #10101a 0%, #0a0a0f 100%);
+            border-bottom: 1px solid #1e1e2a;
+        }
+        .hero h2 {
+            font-size: 2rem;
+            font-weight: 300;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+        .hero h2 strong { color: #e94560; font-weight: 600; }
+        .hero p {
+            color: #707080;
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+        }
+        .hero img {
+            max-width: 100%;
+            border-radius: 6px;
+            margin-top: 2rem;
+            border: 1px solid #1e1e2a;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        section {
+            padding: 2.5rem 0;
+            border-bottom: 1px solid #14141e;
+        }
+        section:last-of-type { border-bottom: none; }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: #e0e0e0;
+            margin-bottom: 1.2rem;
+        }
+        h3:before {
+            content: "";
+            display: inline-block;
+            width: 3px;
+            height: 1.1em;
+            background: #e94560;
+            margin-right: 0.6rem;
+            vertical-align: middle;
+        }
+        h4 {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #c0c0d0;
+            margin: 1.5rem 0 0.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 0.8rem;
+            margin: 1rem 0;
+        }
+        .stat-card {
+            background: #10101a;
+            padding: 1rem;
+            border-radius: 4px;
+            text-align: center;
+            border: 1px solid #1a1a28;
+        }
+        .stat-card .num {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #e94560;
+        }
+        .stat-card .lbl {
+            font-size: 0.78rem;
+            color: #606070;
+            margin-top: 0.2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+        th {
+            text-align: left;
+            padding: 0.5rem 0.8rem;
+            color: #808090;
+            font-weight: 500;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #1e1e2a;
+        }
+        td {
+            padding: 0.5rem 0.8rem;
+            border-bottom: 1px solid #14141e;
+        }
+        tr:hover td { background: #0e0e18; }
+
+        .keyboard-layout {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+        .keyboard-row {
+            display: flex;
+            gap: 6px;
+        }
+        kbd {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #181828;
+            color: #e0e0e0;
+            border: 1px solid #2a2a3a;
+            border-radius: 4px;
+            font-family: 'Segoe UI', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            min-width: 36px;
+            height: 36px;
+            padding: 0 10px;
+            box-shadow: 0 1px 0 #2a2a3a;
+        }
+        kbd.action {
+            background: #1a0a0a;
+            border-color: #3a1a1a;
+            color: #e94560;
+        }
+        kbd.spacer { background: transparent; border: none; box-shadow: none; min-width: 36px; }
+        kbd.wide { min-width: 48px; }
+
+        .sprite-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1rem 0;
+            justify-content: center;
+        }
+        .sprite-item {
+            background: #10101a;
+            border: 1px solid #1a1a28;
+            border-radius: 4px;
+            padding: 0.8rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .sprite-item img {
+            image-rendering: pixelated;
+            max-width: 120px;
+            height: auto;
+            border: 1px solid #1e1e2a;
+        }
+        .sprite-item span {
+            font-size: 0.78rem;
+            color: #707080;
+        }
+
+        .controls-wrap {
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+        .controls-legend {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.3rem 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #808090;
+        }
+        .controls-legend kbd {
+            min-width: 28px;
+            height: 28px;
+            font-size: 0.75rem;
+        }
+
+        .fn-block {
+            background: #0e0e18;
+            border: 1px solid #1a1a28;
+            border-radius: 4px;
+            padding: 1rem 1.2rem;
+            margin: 0.8rem 0;
+        }
+        .fn-block .fn-name {
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.95rem;
+            color: #f0c080;
+            font-weight: 600;
+        }
+        .fn-block .fn-file {
+            font-size: 0.8rem;
+            color: #505060;
+            margin-left: 0.5rem;
+        }
+        .fn-block .fn-desc {
+            margin-top: 0.4rem;
+            font-size: 0.9rem;
+            color: #b0b0b8;
+        }
+        .fn-block .fn-params {
+            margin-top: 0.4rem;
+            font-size: 0.85rem;
+            color: #808090;
+        }
+        .fn-block .fn-params strong { color: #a0a0b0; }
+
+        ol {
+            margin-left: 1.2rem;
+            color: #b0b0b8;
+        }
+        ol li { margin: 0.3rem 0; }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #404050;
+            font-size: 0.8rem;
+            border-top: 1px solid #14141e;
+        }
+
+        @media (max-width: 600px) {
+            .topbar { flex-direction: column; align-items: flex-start; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <h1>Prince of Persia <span>//</span> MIPS</h1>
+    <nav>
+        <a href="#sobre">Sobre</a>
+        <a href="#executar">Como executar</a>
+        <a href="#controles">Controles</a>
+        <a href="#stats">Estatisticas</a>
+        <a href="#arquitetura">Arquitetura</a>
+        <a href="#colisao">Colisao</a>
+        <a href="#funcoes">Funcoes</a>
+        <a href="#som">Som</a>
+    </nav>
+</div>
+
+<div class="hero">
+    <h2>Prince of Persia em <strong>Assembly MIPS</strong></h2>
+    <p>Projeto academico para o simulador MARS &mdash; 2.919 linhas, 33 arquivos, 9 efeitos sonoros</p>
+    <img src="images/menuprincipal.png" alt="Menu Principal">
+</div>
+
+<div class="container">
+
+<section id="sobre">
+    <h3>Sobre o projeto</h3>
+    <p>
+        Implementacao do classico Prince of Persia em linguagem Assembly MIPS,
+        desenvolvida para o simulador MARS (MIPS Assembler and Runtime Simulator).
+        O jogo conta com 2 fases, sistema de colisao por tiles, inimigo autonomo,
+        combate com hitbox e efeitos sonoros via MIDI. Os sprites foram adaptados
+        do jogo original de Super Nintendo e editados no Aseprite.
+    </p>
+</section>
+
+<section id="executar">
+    <h3>Como executar</h3>
+    <ol>
+        <li>Baixe o <a href="https://courses.missouristate.edu/KenVollmar/MARS/" target="_blank">MARS Simulator</a> (Java Runtime necessario)</li>
+        <li>Abra o arquivo <code>main.asm</code> (File &rarr; Open)</li>
+        <li>Ative o Bitmap Display (Tools &rarr; Bitmap Display): 512x256, base <code>0x10010000</code>, Unit 1x1, conecte ao MIPS</li>
+        <li>Ative o Keyboard MMIO (Tools &rarr; Keyboard and Display MMIO Simulator), conecte ao MIPS</li>
+        <li>Monte com F5 e execute (Run &rarr; Set Speed &rarr; maximum)</li>
+        <li>Clique na janela do teclado MMIO para capturar as teclas</li>
+    </ol>
+</section>
+
+<section id="controles">
+    <h3>Controles</h3>
+    <div class="controls-wrap">
+        <div class="keyboard-layout">
+            <div class="keyboard-row">
+                <kbd class="spacer"></kbd>
+                <kbd>Q</kbd>
+                <kbd>W</kbd>
+                <kbd>E</kbd>
+                <kbd class="spacer" style="min-width:72px"></kbd>
+                <kbd class="action">R</kbd>
+                <kbd class="spacer"></kbd>
+                <kbd class="action">X</kbd>
+            </div>
+            <div class="keyboard-row">
+                <kbd class="spacer"></kbd>
+                <kbd>A</kbd>
+                <kbd>S</kbd>
+                <kbd>D</kbd>
+            </div>
+        </div>
+        <div class="controls-legend">
+            <span><kbd>Q</kbd></span><span>Pular diagonal (esquerda)</span>
+            <span><kbd>W</kbd></span><span>Pular (vertical)</span>
+            <span><kbd>E</kbd></span><span>Pular diagonal (direita)</span>
+            <span><kbd>A</kbd></span><span>Mover para esquerda</span>
+            <span><kbd>S</kbd></span><span>Atacar com espada</span>
+            <span><kbd>D</kbd></span><span>Mover para direita</span>
+            <span><kbd>R</kbd></span><span>Reset do jogo</span>
+            <span><kbd>X</kbd></span><span>Sair do jogo</span>
+        </div>
+    </div>
+</section>
+
+<section id="stats">
+    <h3>Estatisticas do projeto</h3>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="num">2.919</div>
+            <div class="lbl">Linhas Assembly</div>
+        </div>
+        <div class="stat-card">
+            <div class="num">33</div>
+            <div class="lbl">Arquivos .asm</div>
+        </div>
+        <div class="stat-card">
+            <div class="num">9</div>
+            <div class="lbl">Efeitos sonoros</div>
+        </div>
+        <div class="stat-card">
+            <div class="num">3</div>
+            <div class="lbl">Cenarios</div>
+        </div>
+        <div class="stat-card">
+            <div class="num">21</div>
+            <div class="lbl">Imagens PNG</div>
+        </div>
+        <div class="stat-card">
+            <div class="num">2</div>
+            <div class="lbl">Scripts Python</div>
+        </div>
+    </div>
+
+    <h4>Por categoria</h4>
+    <table>
+        <tr><th>Categoria</th><th>Arquivos</th><th>Linhas</th><th>%</th></tr>
+        <tr><td>Logica do jogo</td><td><code>util/*.asm</code>, <code>main.asm</code>, <code>personagem/*.asm</code>, <code>inimigo/*.asm</code></td><td>1.163</td><td>39,8%</td></tr>
+        <tr><td>Cenarios (framebuffer)</td><td><code>cenarios/*.asm</code></td><td>1.094</td><td>37,5%</td></tr>
+        <tr><td>Sprites</td><td><code>sprites/*.asm</code></td><td>610</td><td>20,9%</td></tr>
+        <tr><td>Mapas de tile (colisao)</td><td><code>tiles/*.asm</code></td><td>34</td><td>1,1%</td></tr>
+        <tr><td>Scripts Python</td><td><code>scripts/*.py</code></td><td>2</td><td>—</td></tr>
+    </table>
+
+    <h4>Por modulo de logica</h4>
+    <table>
+        <tr><th>Modulo</th><th>Arquivo</th><th>Linhas</th><th>Responsabilidade</th></tr>
+        <tr><td>Controles</td><td><code>controlarCenarios.asm</code></td><td>420</td><td>Input, fisica, colisao, combate, transicoes</td></tr>
+        <tr><td>Renderizacao</td><td><code>renderizarCenario.asm</code></td><td>230</td><td>Desenho de fundo, dirty rects, delay</td></tr>
+        <tr><td>Som</td><td><code>sons.asm</code></td><td>128</td><td>9 efeitos sonoros MIDI</td></tr>
+        <tr><td>Sprites</td><td><code>renderizarPersonagem.asm</code></td><td>92</td><td>Desenho e restauracao de sprites</td></tr>
+        <tr><td>Colisao</td><td><code>colisoes.asm</code></td><td>79</td><td>Sistema de tiles 16x16</td></tr>
+        <tr><td>Renderizacao espelhada</td><td><code>renderizarCenarioEspelhado.asm</code></td><td>60</td><td>Debug (visualizacao espelhada)</td></tr>
+        <tr><td>Main</td><td><code>main.asm</code></td><td>48</td><td>Entry point, variaveis globais</td></tr>
+        <tr><td>Primitivas graficas</td><td><code>linhasRetangulos.asm</code></td><td>44</td><td>Pixel, linha, retangulo</td></tr>
+        <tr><td>IA do inimigo</td><td><code>atualizarInimigo.asm</code></td><td>33</td><td>Movimento autonomo vertical</td></tr>
+        <tr><td>Controles espelhados</td><td><code>controlarCenariosEspelhado.asm</code></td><td>29</td><td>Navegacao de debug (J/K/R)</td></tr>
+        <tr><td>Testes</td><td><code>testes.asm</code></td><td>18</td><td>Bootstrap de testes</td></tr>
+    </table>
+</section>
+
+<section id="arquitetura">
+    <h3>Arquitetura</h3>
+
+    <p>
+        O codigo segue uma arquitetura modular. Cada sistema do jogo esta em seu
+        proprio arquivo .asm dentro de uma hierarquia de diretorios.
+    </p>
+
+    <pre style="background:#0e0e18; padding:1rem; border-radius:4px; border:1px solid #1a1a28; font-size:0.8rem; line-height:1.5; overflow-x:auto; color:#b0b0b0;">
+main.asm                         # Entry point + variaveis globais
+|
++-- util/controle/
+|   +-- controlarCenarios.asm    # Loop principal (input, fisica, combate)
+|   +-- controlarCenariosEspelhado.asm  # Debug (navegacao estatica)
+|   +-- colisoes.asm             # Sistema de colisao por tiles
+|
++-- util/renders/
+|   +-- renderizarCenario.asm    # Renderizacao de cenarios + dirty rect
+|   +-- renderizarCenarioEspelhado.asm  # Renderizacao espelhada (debug)
+|
++-- util/formas/
+|   +-- linhasRetangulos.asm     # Primitivas graficas
+|
++-- util/som/
+|   +-- sons.asm                 # Efeitos sonoros MIDI
+|
++-- personagem/
+|   +-- renderizarPersonagem.asm # Desenho/restauracao de sprites
+|
++-- inimigo/
+|   +-- atualizarInimigo.asm     # IA autonoma do inimigo
+|
++-- cenarios/                    # Imagens dos cenarios (dados)
++-- tiles/                       # Mapas de colisao (dados)
++-- sprites/                     # Sprites dos personagens (dados)
++-- scripts/                     # Ferramentas Python de conversao</pre>
+
+    <h4>Fluxo de execucao</h4>
+    <p>
+        O jogo executa em um loop infinito. Cada ciclo:
+    </p>
+    <ol>
+        <li>Le o teclado via MMIO (endereco <code>0xFFFF0000</code>)</li>
+        <li>Interpreta a tecla e dispara a acao correspondente (pulo, ataque, movimento)</li>
+        <li>Aplica fisica: gravidade (<code>velocidade_y += 1</code>), drift horizontal, colisao vertical, pouso</li>
+        <li>Atualiza cooldown do ataque e verifica contato com o inimigo</li>
+        <li>Verifica limites da tela e transicoes de cenario</li>
+        <li>Redireciona para o renderizador correto (menu, fase 1 ou fase 2 + inimigo)</li>
+    </ol>
+</section>
+
+<section id="colisao">
+    <h3>Sistema de colisao por tiles</h3>
+
+    <p>
+        O cenario e dividido em tiles de 16x16 pixels. Cada tile armazena um valor
+        que determina seu comportamento de colisao:
+    </p>
+
+    <table>
+        <tr><th>Valor</th><th>Significado</th><th>Descricao</th></tr>
+        <tr><td>0</td><td>Vazio</td><td>Personagem pode passar</td></tr>
+        <tr><td>1</td><td>Solido</td><td>Parede, chao ou plataforma (bloqueia)</td></tr>
+        <tr><td>2</td><td>Perigo</td><td>Abismo, espinhos ou lava (morte instantanea)</td></tr>
+    </table>
+
+    <p>
+        A bounding box do personagem (9x42 pixels) e verificada em 6 pontos:
+        os 4 cantos mais 2 pontos medios. Cada ponto e convertido em tile pela formula:
+    </p>
+
+    <pre style="background:#0e0e18; padding:0.8rem; border-radius:4px; border:1px solid #1a1a28; color:#b0b0b0;">
+tile_X = X / 16
+tile_Y = Y / 16
+indice = (tile_Y * 32 + tile_X) * 4    # 4 bytes por word</pre>
+
+    <p>
+        O maior valor entre os 6 pontos e retornado. Os mapas de colisao (stage1 e stage2)
+        sao matrizes 32x16 armazenadas como words em <code>tiles/stage1.asm</code> e
+        <code>tiles/stage2.asm</code>.
+    </p>
+</section>
+
+<section id="sprites">
+    <h3>Sprites</h3>
+
+    <p>
+        Os sprites dos cenarios foram extraidos do jogo Prince of Persia de Super Nintendo
+        e adaptados com o software Aseprite. O projeto conta com:
+    </p>
+
+    <div class="sprite-gallery">
+        <div class="sprite-item">
+            <img src="images/prince_idle_right.png" alt="prince_idle_right">
+            <span><code>prince_idle_right</code> (9x42)</span>
+        </div>
+        <div class="sprite-item">
+            <img src="images/prince_idle_left.png" alt="prince_idle_left">
+            <span><code>prince_idle_left</code> (9x42)</span>
+        </div>
+        <div class="sprite-item">
+            <img src="images/prince_idle_sword_right.png" alt="prince_idle_sword_right">
+            <span><code>prince_idle_sword_right</code> (9x42)</span>
+        </div>
+        <div class="sprite-item">
+            <img src="images/prince_idle_sword_left.png" alt="prince_idle_sword_left">
+            <span><code>prince_idle_sword_left</code> (9x42)</span>
+        </div>
+        <div class="sprite-item">
+            <img src="images/prince_jump_right.png" alt="prince_jump_right">
+            <span><code>prince_jump_right</code> (50x30)</span>
+        </div>
+        <div class="sprite-item">
+            <img src="images/prince_jump_left.png" alt="prince_jump_left">
+            <span><code>prince_jump_left</code> (50x30)</span>
+        </div>
+        <div class="sprite-item">
+            <img src="images/prince_attack_sword_right.png" alt="prince_attack_sword_right">
+            <span><code>prince_attack_sword_right</code> (65x32)</span>
+        </div>
+        <div class="sprite-item">
+            <img src="images/prince_attack_sword_left.png" alt="prince_attack_sword_left">
+            <span><code>prince_attack_sword_left</code> (65x32)</span>
+        </div>
+        <div class="sprite-item">
+            <img src="images/coisa1.png" alt="inimigo1-frame1">
+            <span><code>inimigo1-frame1</code> (39x50)</span>
+        </div>
+        <div class="sprite-item">
+            <img src="images/coisa2.png" alt="inimigo1-frame2">
+            <span><code>inimigo1-frame2</code> (39x50)</span>
+        </div>
+        <div class="sprite-item">
+            <img src="images/coisa3.png" alt="inimigo1-frame3">
+            <span><code>inimigo1-frame3</code> (39x50)</span>
+        </div>
+        <div class="sprite-item">
+            <img src="images/coisa4.png" alt="inimigo1-frame4">
+            <span><code>inimigo1-frame4</code> (39x50)</span>
+        </div>
+
+        <div class="sprite-item">
+            <img src="images/walk_left_frames.png" alt="walk_left_frames">
+            <span><code>walk_left_frames</code></span>
+        </div>
+    </div>
+
+    <p>
+        A transparencia usa color key: pixels com valor <code>0x00000000</code> nao sao desenhados.
+        O sistema de "retangulos sujos" (dirty rectangles) evita redesenhar o fundo inteiro
+        a cada frame: apenas a area onde o sprite estava no frame anterior e restaurada.
+    </p>
+</section>
+
+<section id="funcoes">
+    <h3>Documentacao das funcoes</h3>
+
+    <div class="fn-block">
+        <div class="fn-name">main</div>
+        <div class="fn-file">main.asm (48 linhas)</div>
+        <div class="fn-desc">
+            Ponto de entrada do programa. Contem todas as variaveis globais e o loop
+            principal que chama <code>controlesCenario</code> infinitamente.
+        </div>
+        <div class="fn-params">
+            <strong>Variaveis globais:</strong> <code>prince_x/y</code>, <code>inimigo_x/y</code>,
+            <code>velocidade_y/x</code>, <code>no_chao</code>, <code>direcao</code>,
+            <code>inimigo_vida</code>, <code>atacando</code>, <code>ataque_cooldown</code> e outras.
+        </div>
+    </div>
+
+    <div class="fn-block">
+        <div class="fn-name">controlesCenario</div>
+        <div class="fn-file">util/controle/controlarCenarios.asm (420 linhas)</div>
+        <div class="fn-desc">
+            Nucleo do loop de jogo. Faz polling do teclado via MMIO, mapeia teclas para
+            acoes, executa fisica (gravidade, colisao, drift), gerencia combate e
+            redireciona para o renderizador correto.
+        </div>
+        <div class="fn-params">
+            <strong>Teclas:</strong> W (pulo), Q/E (pulo diagonal), A/D (movimento),
+            S (ataque), R (reset), X (sair)
+        </div>
+    </div>
+
+    <div class="fn-block">
+        <div class="fn-name">iniciar_pulo / pulo_esquerda / pulo_direita</div>
+        <div class="fn-file">controlarCenarios.asm</div>
+        <div class="fn-desc">
+            Verifica se o personagem esta no chao, define velocidade vertical (-16) e
+            horizontal (0, -5 ou +5), remove a flag de chao e reproduz som de pulo.
+        </div>
+    </div>
+
+    <div class="fn-block">
+        <div class="fn-name">iniciar_ataque</div>
+        <div class="fn-file">controlarCenarios.asm</div>
+        <div class="fn-desc">
+            Verifica cooldown, define duracao do ataque (5 frames) e cooldown (10 frames),
+            reproduz som de ataque e calcula hitbox. A hitbox se estende 65px para frente
+            ou 56px para tras dependendo da direcao. Se acertar o inimigo, aplica dano
+            (3 hits para matar).
+        </div>
+    </div>
+
+    <div class="fn-block">
+        <div class="fn-name">aplicar_fisica</div>
+        <div class="fn-file">controlarCenarios.asm</div>
+        <div class="fn-desc">
+            Se no chao, verifica se o piso ainda esta presente. Se no ar, incrementa
+            a gravidade (<code>velocidade_y += 1</code>). Calcula colisao vertical:
+            se tile=0 permite movimento, tile=1 bloqueia/inverte, tile=2 mata.
+            Trata pouso no chao (alinha Y ao tile) e drift horizontal do pulo diagonal.
+        </div>
+    </div>
+
+    <div class="fn-block">
+        <div class="fn-name">morte_personagem</div>
+        <div class="fn-file">controlarCenarios.asm</div>
+        <div class="fn-desc">
+            Reproduz som de morte, reseta posicao do principe para (45, 54),
+            zera fisica e estado de ataque, redireciona para o menu (cenario 0).
+        </div>
+    </div>
+
+    <div class="fn-block">
+        <div class="fn-name">completou_fase / vai_para_cenario_2</div>
+        <div class="fn-file">controlarCenarios.asm</div>
+        <div class="fn-desc">
+            <code>completou_fase</code>: quando o principe atinge a borda direita no cenario 2,
+            toca a fanfarra de vitoria e volta ao menu.
+            <code>vai_para_cenario_2</code>: toca som de transicao e configura o cenario 2
+            com posicao inicial e vida do inimigo resetada.
+        </div>
+    </div>
+
+    <div class="fn-block">
+        <div class="fn-name">existeCaracter / acionarCaracter</div>
+        <div class="fn-file">controlarCenarios.asm</div>
+        <div class="fn-desc">
+            Implementam o polling do teclado via MMIO. Leem o registrador Receiver Control
+            em <code>0xFFFF0000</code> e retornam o codigo ASCII da tecla pressionada
+            (ou 0 se nenhuma).
+        </div>
+    </div>
+
+    <div class="fn-block">
+        <div class="fn-name">checar_colisao</div>
+        <div class="fn-file">util/controle/colisoes.asm (79 linhas)</div>
+        <div class="fn-desc">
+            Verifica colisao entre a bounding box 9x42 do personagem e o mapa de tiles.
+            Testa 6 pontos no contorno do personagem. Para cada ponto, converte a
+            coordenada (X,Y) para tile (divisao por 16) e consulta o mapa.
+            Retorna o maior valor de tile encontrado (0=vazio, 1=solido, 2=morte).
+        </div>
+        <div class="fn-params">
+            <strong>Parametros:</strong> $a0 = X, $a1 = Y &rarr; <strong>Retorno:</strong> $v0 = tile (0/1/2)
+        </div>
+    </div>
+
+    <div class="fn-block">
+        <div class="fn-name">obter_tile</div>
+        <div class="fn-file">colisoes.asm</div>
+        <div class="fn-desc">
+            Converte pixel (X,Y) em indice do mapa de tiles.
+            Formula: <code>indice = ((Y/16) * 32 + (X/16)) * 4</code>.
+            Seleciona o mapa correto baseado no cenario atual.
+            Fora dos limites da tela, retorna tile solido (valor 1).
+        </div>
+    </div>
+
+    <div class="fn-block">
+        <div class="fn-name">render_cenario</div>
+        <div class="fn-file">util/renders/renderizarCenario.asm (230 linhas)</div>
+        <div class="fn-desc">
+            Renderiza um cenario completo no framebuffer. Percorre todos os pixels
+            e copia para a memoria de video. Pixels com valor <code>0xFFFFFFFF</code>
+            sao transparentes (nao desenhados).
+        </div>
+        <div class="fn-params">
+            <strong>Parametros:</strong> $a0 = endereco do cenario, $a1 = largura, $a2 = altura
+        </div>
+    </div>
+
+    <div class="fn-block">
+        <div class="fn-name">espera</div>
+        <div class="fn-file">renderizarCenario.asm</div>
+        <div class="fn-desc">
+            Pausa a execucao por um periodo especificado em milissegundos.
+            Usa a syscall 32 (Sleep) do MARS.
+        </div>
+        <div class="fn-params">
+            <strong>Parametro:</strong> $a0 = tempo em ms
+        </div>
+    </div>
+
+    <div class="fn-block">
+        <div class="fn-name">renderizarCenarioUm / renderizarCenarioDois / renderizarCenarioZero</div>
+        <div class="fn-file">renderizarCenario.asm</div>
+        <div class="fn-desc">
+            Renderizadores especificos de cada cenario:<br>
+            - <strong>Cenario 1:</strong> se <code>atualizar_fundo == 1</code>, desenha o fundo completo.
+              Senao, restaura so a area do sprite anterior (dirty rectangle). Seleciona o sprite
+              correto (idle, pulo, ataque) conforme o estado do personagem.<br>
+            - <strong>Cenario 2:</strong> mesma logica do cenario 1, mas adiciona o inimigo:
+              restaura area antiga do inimigo, chama <code>atualizar_inimigos</code> e desenha
+              o inimigo na nova posicao.<br>
+            - <strong>Cenario 0:</strong> desenha o menu principal (imagem estatica).
+        </div>
+    </div>
+
+    <div class="fn-block">
+        <div class="fn-name">renderizar_sprite</div>
+        <div class="fn-file">personagem/renderizarPersonagem.asm (92 linhas)</div>
+        <div class="fn-desc">
+            Desenha um sprite sobre o framebuffer. Pixels com valor <code>0x00000000</code>
+            sao considerados transparentes. Usa loop duplo (linhas x colunas) para
+            percorrer todos os pixels do sprite.
+        </div>
+        <div class="fn-params">
+            <strong>Parametros:</strong> $a0 = endereco do sprite, $a1 = X, $a2 = Y,
+            $a3 = largura, $t0 = altura
+        </div>
+    </div>
+
+    <div class="fn-block">
+        <div class="fn-name">restaurar_fundo_sprite</div>
+        <div class="fn-file">renderizarPersonagem.asm</div>
+        <div class="fn-desc">
+            Restaura o fundo do cenario na area onde o sprite estava, copiando os
+            pixels originais do cenario para o framebuffer. Usado pelo sistema de
+            dirty rectangles para "apagar" o sprite antes de redebbulho-lo.
+        </div>
+        <div class="fn-params">
+            <strong>Parametros:</strong> $a0 = endereco do cenario, $a1 = X antigo,
+            $a2 = Y antigo, $a3 = largura, $t0 = altura
+        </div>
+    </div>
+
+    <div class="fn-block">
+        <div class="fn-name">atualizar_inimigos</div>
+        <div class="fn-file">inimigo/atualizarInimigo.asm (33 linhas)</div>
+        <div class="fn-desc">
+            Controla a fisica autonoma do inimigo no cenario 2. O inimigo executa
+            um movimento vertical de "flutuacao": 1 pixel por frame ate uma amplitude
+            de 100 pixels, depois inverte a direcao. Esse movimento simula levitacao
+            (nao usa gravidade real).
+        </div>
+    </div>
+
+    <div class="fn-block">
+        <div class="fn-name">play_som_* (9 funcoes)</div>
+        <div class="fn-file">util/som/sons.asm (128 linhas)</div>
+        <div class="fn-desc">
+            Efeitos sonoros via MIDI usando as syscalls 31 (nao-bloqueante) e 33
+            (bloqueante) do MARS. As funcoes sao:
+        </div>
+        <div class="fn-params">
+            <table style="font-size:0.85rem; margin-top:0.3rem;">
+                <tr><th>Funcao</th><th>Evento</th><th>Instrumento</th><th>Nota</th><th>Duracao</th></tr>
+                <tr><td><code>play_som_ataque</code></td><td>Golpe de espada</td><td>Gunshot (127)</td><td>C5</td><td>50ms</td></tr>
+                <tr><td><code>play_som_pulo</code></td><td>Pulo</td><td>Bird Tweet (123)</td><td>G4</td><td>100ms</td></tr>
+                <tr><td><code>play_som_morte</code></td><td>Morte</td><td>Gunshot (127)</td><td>C2</td><td>400ms</td></tr>
+                <tr><td><code>play_som_acerto_inimigo</code></td><td>Acertar inimigo</td><td>Fret Noise (122)</td><td>C4</td><td>60ms</td></tr>
+                <tr><td><code>play_som_inimigo_morto</code></td><td>Inimigo derrotado</td><td>Brass Section (61)</td><td>E4, B4</td><td>120+200ms</td></tr>
+                <tr><td><code>play_som_fase_completa</code></td><td>Fase concluida</td><td>Synth Brass (63)</td><td>C4-E4-G4-C5</td><td>4 notas</td></tr>
+                <tr><td><code>play_som_pouso</code></td><td>Pousar no chao</td><td>Melodic Tom (117)</td><td>C3</td><td>80ms</td></tr>
+                <tr><td><code>play_som_transicao</code></td><td>Troca de cenario</td><td>Square Wave (80)</td><td>C5, C4</td><td>100+100ms</td></tr>
+                <tr><td><code>play_som_menu</code></td><td>Menu (utilitario)</td><td>Synth Voice (54)</td><td>C4-E4-G4</td><td>3 notas</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="fn-block">
+        <div class="fn-name">posicionar_pixel / desenhar_linha / desenhar_retangulo / tela_branca</div>
+        <div class="fn-file">util/formas/linhasRetangulos.asm (44 linhas)</div>
+        <div class="fn-desc">
+            Primitivas graficas rudimentares para o framebuffer.
+            <code>posicionar_pixel</code> calcula o endereco por <code>base + ((Y &lt;&lt; 9) + X) &lt;&lt; 2</code>.
+            <code>desenhar_linha</code> desenha uma linha horizontal.
+            <code>desenhar_retangulo</code> empilha linhas para formar um retangulo preenchido.
+            <code>tela_branca</code> preenche a tela inteira com branco (512x256).
+        </div>
+    </div>
+</section>
+
+<section id="scripts">
+    <h3>Ferramentas de conversao</h3>
+
+    <p>
+        Dois scripts Python convertem imagens PNG para o formato Assembly usado pelo projeto:
+    </p>
+
+    <div class="fn-block">
+        <div class="fn-name">conversor_cenarios.py</div>
+        <div class="fn-desc">
+            Converte imagens de cenarios para arrays de pixels em Assembly.
+            Pixels com alpha 0 viram <code>0xFFFFFFFF</code> (transparente no renderizador).
+            Gera labels de largura e altura automaticamente.
+        </div>
+    </div>
+
+    <div class="fn-block">
+        <div class="fn-name">conversor_sprites.py</div>
+        <div class="fn-desc">
+            Converte imagens de sprites para arrays de pixels. Pixels com alpha &lt; 10
+            viram <code>0x00000000</code> (transparente no renderizador de sprites).
+        </div>
+    </div>
+</section>
+
+<section id="cenarios-img">
+    <h3>Cenarios</h3>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:1rem; margin:1rem 0;">
+        <div><img src="images/cenario1.png" style="width:100%; border-radius:4px; border:1px solid #1e1e2a;" alt="Cenario 1"></div>
+        <div><img src="images/cenario2.png" style="width:100%; border-radius:4px; border:1px solid #1e1e2a;" alt="Cenario 2"></div>
+        <div><img src="images/cenario1_tiles.png" style="width:100%; border-radius:4px; border:1px solid #1e1e2a;" alt="Tiles Fase 1"></div>
+        <div><img src="images/cenario2_tiles.png" style="width:100%; border-radius:4px; border:1px solid #1e1e2a;" alt="Tiles Fase 2"></div>
+    </div>
+</section>
+
+</div>
+
+<div class="footer">
+    Prince of Persia &copy; Brøderbund &mdash; Implementacao academica em MIPS Assembly &mdash;
+    <a href="https://github.com/anomalyco/Prince-of-Persia---Assembly-MIPS">GitHub</a>
+</div>
+
+</body>
+</html>

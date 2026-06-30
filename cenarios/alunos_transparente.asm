@@ -1,3 +1,10 @@
+# =============================================================================
+# alunos_transparente.asm  -  pixels do fundo "Alunos Transparente"
+# =============================================================================
+# Dados de pixel RGBA para o fundo decorativo (512x256).
+# alunos: buffer de pixels
+# alunos_width / alunos_height: dimensoes da imagem
+# =============================================================================
 .data
 alunos_width: .word 512
 alunos_height: .word 256

@@ -1,3 +1,16 @@
+# =============================================================================
+# renderizarPersonagem.asm  -  funcoes de renderizacao do personagem
+# =============================================================================
+# renderizar_sprite:
+#   Desenha um sprite na tela com transparencia.
+#   Pixels com valor 0x00000000 sao ignorados (transparentes).
+#   Argumentos: a0=endereco do sprite, a1=x, a2=y, a3=largura, t0=altura
+# -----------------------------------------------------------------------------
+# restaurar_fundo_sprite:
+#   Restaura o fundo do cenario na area ocupada pelo sprite.
+#   Copia pixels do buffer do cenario de volta para o framebuffer.
+#   Argumentos: a0=endereco do cenario, a1=x, a2=y, a3=largura, t0=altura
+# =============================================================================
 .text
 .globl renderizar_sprite
 renderizar_sprite:

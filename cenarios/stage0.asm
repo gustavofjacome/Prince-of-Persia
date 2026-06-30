@@ -1,3 +1,10 @@
+# =============================================================================
+# stage0.asm  -  pixels do menu principal (cenario 0)
+# =============================================================================
+# Dados de pixel RGBA para o fundo do menu principal (512x256).
+# menu_principal: buffer de pixels
+# menu_principal_width / menu_principal_height: dimensoes da imagem
+# =============================================================================
 .data
 menu_principal_width: .word 512
 menu_principal_height: .word 256

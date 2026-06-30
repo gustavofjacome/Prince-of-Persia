@@ -1,3 +1,10 @@
+# =============================================================================
+# stage1.asm  -  pixels do cenario 1
+# =============================================================================
+# Dados de pixel RGBA para o fundo do cenario 1 (512x256).
+# cenario1: buffer de pixels
+# cenario1_width / cenario1_height: dimensoes da imagem
+# =============================================================================
 .data
 cenario1_width: .word 512
 cenario1_height: .word 256

@@ -1,3 +1,10 @@
+# =============================================================================
+# testes.asm  -  ponto de entrada principal para testes do jogo
+# =============================================================================
+# Inclui todos os cenarios e modulos do jogo.
+# main: Inicia o loop de controle do cenario (controlesCenario).
+# fim: Encerra o programa com syscall 10.
+# =============================================================================
 .data
 .include "cenarios/dummy.asm"
 .include "cenarios/stage0.asm"

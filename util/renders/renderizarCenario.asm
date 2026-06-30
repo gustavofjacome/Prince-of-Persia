@@ -1,3 +1,25 @@
+# =============================================================================
+# renderizarCenario.asm  -  renderizacao de cenarios
+# =============================================================================
+# render_cenario:
+#   Desenha um cenario no framebuffer a partir de um buffer de pixels.
+#   Pixels com valor 0xFFFFFFFF sao ignorados (transparentes).
+#   Argumentos: a0=endereco, a1=largura, a2=altura
+# -----------------------------------------------------------------------------
+# espera:
+#   Pausa a execucao por um numero de milissegundos (syscall 32).
+#   Argumento: a0=milissegundos
+# -----------------------------------------------------------------------------
+# renderizarCenarioUm:
+#   Renderiza o cenario 1 com logica de atualizacao de fundo,
+#   restauracao e desenho do principe (idle, pulo ou ataque).
+# -----------------------------------------------------------------------------
+# renderizarCenarioDois:
+#   Renderiza o cenario 2, similar ao Um mas com logica de inimigo.
+# -----------------------------------------------------------------------------
+# renderizarCenarioZero:
+#   Renderiza o menu principal (cenario 0).
+# =============================================================================
 .text
 render_cenario:
     addiu $sp, $sp, -16

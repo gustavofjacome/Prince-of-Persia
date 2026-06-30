@@ -1,3 +1,13 @@
+# =============================================================================
+# atualizarInimigo.asm  -  inteligencia artificial basica do inimigo
+# =============================================================================
+# atualizar_inimigos:
+#   Movimenta o inimigo verticalmente (animacao de pulo/bounce).
+#   A cada 100 frames a direcao do movimento eh invertida.
+#   Variaveis: inimigo_y, inimigo_jump_dir, inimigo_jump_count
+#   Se inimigo_jump_dir = 1: sobe (y decrementa)
+#   Se inimigo_jump_dir = -1: desce (y incrementa)
+# =============================================================================
 .text
 .globl atualizar_inimigos
 atualizar_inimigos:

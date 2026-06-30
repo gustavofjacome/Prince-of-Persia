@@ -1,3 +1,10 @@
+# =============================================================================
+# pikachu.asm  -  sprite do Pikachu (cenario)
+# =============================================================================
+# Sprite 43x49 pixels em formato RGBA (paleta).
+# pika: endereco do sprite
+# pika_width / pika_height: dimensoes
+# =============================================================================
 .data
 pika_width: .word 43
 pika_height: .word 49

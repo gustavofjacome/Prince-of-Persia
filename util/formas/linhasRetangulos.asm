@@ -1,3 +1,22 @@
+# =============================================================================
+# linhasRetangulos.asm  -  funcoes graficas basicas
+# =============================================================================
+# tela_branca:
+#   Preenche toda a tela com a cor branca (0xFFFFFF).
+#   Chama desenhar_retangulo com as dimensoes da tela (512x256).
+# -----------------------------------------------------------------------------
+# posicionar_pixel:
+#   Desenha um pixel na posicao (t6, t7) com a cor t8.
+#   t6=x, t7=y, t8=cor
+# -----------------------------------------------------------------------------
+# desenhar_linha:
+#   Desenha uma linha horizontal a partir de (t6, t7).
+#   s7 = comprimento da linha.
+# -----------------------------------------------------------------------------
+# desenhar_retangulo:
+#   Desenha um retangulo preenchido usando desenhar_linha.
+#   t3=x_inicial, t7=y_inicial, s7=largura, t4=altura, t8=cor
+# =============================================================================
 .text
 tela_branca:
     li $t6, 0

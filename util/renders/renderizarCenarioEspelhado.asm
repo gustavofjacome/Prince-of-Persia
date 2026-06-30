@@ -1,3 +1,21 @@
+# =============================================================================
+# renderizarCenarioEspelhado.asm  -  renderizacao de cenarios modo espelhado
+# =============================================================================
+# render_cenario_espelhado:
+#   Desenha um cenario espelhado horizontalmente no framebuffer.
+#   Percorre as linhas da direita para a esquerda.
+#   Pixels com valor 0xFFFFFFFF sao ignorados (transparentes).
+#   Argumentos: a0=endereco, a1=largura, a2=altura
+# -----------------------------------------------------------------------------
+# renderizarCenarioUmEspelhado:
+#   Renderiza o cenario 1 no modo espelhado.
+# -----------------------------------------------------------------------------
+# renderizarCenarioDoisEspelhado:
+#   Renderiza o cenario 2 no modo espelhado.
+# -----------------------------------------------------------------------------
+# renderizarCenarioZeroEspelhado:
+#   Renderiza o menu principal no modo espelhado.
+# =============================================================================
 .text
 render_cenario_espelhado:
     addiu $sp, $sp, -24
